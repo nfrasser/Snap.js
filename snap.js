@@ -94,8 +94,10 @@
                 return (cache.vendor==='Moz' || cache.vendor==='ms') ? 'transitionend' : cache.vendor+'TransitionEnd';
             },
             canTransform: function(){
-                return (typeof settings.element.style[cache.vendor+'Transform'] !== 'undefined') &&
-                       (settings.element.style[cache.vendor+'Transform'] != "");
+                return (
+                    cache.vendor &&
+                    typeof settings.element.style[cache.vendor+'Transform'] !== 'undefined'
+                );
             },
             deepExtend: function(destination, source) {
                 var property;
@@ -238,13 +240,14 @@
                         var theTranslate = 'translate3d(' + n + 'px, 0,0)';
                         settings.element.style[cache.vendor+'Transform'] = theTranslate;
                     } else {
-                        if (n == 0) {
+                        settings.element.style.width = (win.innerWidth || doc.documentElement.clientWidth)+'px';
+                        /*if (n == 0) {
                             settings.element.style.width = 'auto';
                         } else {
                             var scrollWidth = win.outerWidth - win.innerWidth; //MAINT. NOTE: This is such a hack for IE
                             settings.element.style.width = (win.outerWidth || doc.documentElement.clientWidth)+scrollWidth+'px';
                         }
-
+*/
 
                         settings.element.style.left = n+'px';
                         settings.element.style.right = '';
@@ -506,7 +509,7 @@
             action.translate.easeTo(0);
         };
         this.expand = function(side){
-            var to = win.outerWidth || doc.documentElement.clientWidth;
+            var to = win.innerWidth || doc.documentElement.clientWidth;
 
             if(side==='left'){
                 utils.dispatchEvent('expandLeft');
