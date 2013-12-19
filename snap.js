@@ -94,7 +94,8 @@
                 return (cache.vendor==='Moz' || cache.vendor==='ms') ? 'transitionend' : cache.vendor+'TransitionEnd';
             },
             canTransform: function(){
-                return typeof settings.element.style[cache.vendor+'Transform'] !== 'undefined';
+                return (typeof settings.element.style[cache.vendor+'Transform'] !== 'undefined') &&
+                       (settings.element.style[cache.vendor+'Transform'] != "");
             },
             deepExtend: function(destination, source) {
                 var property;
@@ -207,7 +208,7 @@
                         cache.animatingInterval = setInterval(function() {
                             utils.dispatchEvent('animating');
                         }, 1);
-                        
+
                         utils.events.addEvent(settings.element, utils.transitionCallback(), action.translate.easeCallback);
                         action.translate.x(n);
                     }
@@ -219,7 +220,7 @@
                     if( (settings.disable==='left' && n>0) ||
                         (settings.disable==='right' && n<0)
                     ){ return; }
-                    
+
                     if( !settings.hyperextensible ){
                         if( n===settings.maxPosition || n>settings.maxPosition ){
                             n=settings.maxPosition;
@@ -227,7 +228,7 @@
                             n=settings.minPosition;
                         }
                     }
-                    
+
                     n = parseInt(n, 10);
                     if(isNaN(n)){
                         n = 0;
@@ -237,7 +238,13 @@
                         var theTranslate = 'translate3d(' + n + 'px, 0,0)';
                         settings.element.style[cache.vendor+'Transform'] = theTranslate;
                     } else {
-                        settings.element.style.width = (win.innerWidth || doc.documentElement.clientWidth)+'px';
+                        if (n == 0) {
+                            settings.element.style.width = 'auto';
+                        } else {
+                            var scrollWidth = win.outerWidth - win.innerWidth; //MAINT. NOTE: This is such a hack for IE
+                            settings.element.style.width = (win.outerWidth || doc.documentElement.clientWidth)+scrollWidth+'px';
+                        }
+
 
                         settings.element.style.left = n+'px';
                         settings.element.style.right = '';
@@ -261,25 +268,25 @@
                     // No drag on ignored elements
                     var target = e.target ? e.target : e.srcElement,
                         ignoreParent = utils.parentUntil(target, 'data-snap-ignore');
-                    
+
                     if (ignoreParent) {
                         utils.dispatchEvent('ignore');
                         return;
                     }
-                    
-                    
+
+
                     if(settings.dragger){
                         var dragParent = utils.parentUntil(target, settings.dragger);
-                        
+
                         // Only use dragger if we're in a closed state
-                        if( !dragParent && 
-                            (cache.translation !== settings.minPosition && 
+                        if( !dragParent &&
+                            (cache.translation !== settings.minPosition &&
                             cache.translation !== settings.maxPosition
                         )){
                             return;
                         }
                     }
-                    
+
                     utils.dispatchEvent('start');
                     settings.element.style[cache.vendor+'Transition'] = '';
                     cache.isDragging = true;
@@ -499,7 +506,7 @@
             action.translate.easeTo(0);
         };
         this.expand = function(side){
-            var to = win.innerWidth || doc.documentElement.clientWidth;
+            var to = win.outerWidth || doc.documentElement.clientWidth;
 
             if(side==='left'){
                 utils.dispatchEvent('expandLeft');
